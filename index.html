@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Edge of Survival</title>
+
+<style>
+
+body{
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding-top:80px;
+}
+
+button{
+    background:black;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    padding:10px 20px;
+    margin:10px;
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<!-- INTRO SCREEN -->
+
+<div id="intro">
+
+<p>> System booting...</p>
+<p>> Memory reconstruction incomplete.</p>
+
+<br>
+
+<p>Hey you there. Finally awake.</p>
+
+<p>You were found unconscious in Sector 7.</p>
+
+<p>You used to be an adventurer like the others, then you took an arrow in the knee.</p>
+
+<br>
+
+<p>> Medical status: STABLE</p>
+<p>> Citizen classification: LABOR CLASS</p>
+
+<br>
+
+<button onclick="startGame()">Begin Work Cycle</button>
+
+</div>
+
+
+
+<!-- GAME SCREEN -->
+
+<div id="game" style="display:none;">
+
+<h1 id="day">Day 1</h1>
+
+<p>You wake in your worker unit.</p>
+<p>Ration level: minimal.</p>
+
+<button onclick="work()">Go to Work</button>
+<button onclick="question()">Question the System</button>
+<button onclick="sleep()">Sleep</button>
+
+<br><br>
+
+<p id="result"></p>
+<p id="countdown"></p>
+<p id="stats"></p>
+
+<button onclick="resetGame()">Reset Game</button>
+
+</div>
+
+
+
+<script>
+
+
+/* LOAD SAVE DATA */
+let awareness
+let loyalty
+let coin
+let energy
+let day
+
+function countdown(ms){
+    let seconds = ms / 1000
+    let display = document.getElementById("countdown")
+
+    display.innerText = "Restarting in " + seconds + "..."
+
+    let timer = setInterval(function(){
+        seconds--
+        display.innerText = "Restarting in " + seconds + "..."
+
+        if(seconds <= 0){
+            clearInterval(timer)
+        }
+    }, 1000)
+}
+
+function loadGame(){
+
+    awareness = Number(localStorage.getItem("awareness"))
+    loyalty = Number(localStorage.getItem("loyalty"))
+    coin = Number(localStorage.getItem("coin"))
+    energy = Number(localStorage.getItem("energy"))
+    day = Number(localStorage.getItem("day"))
+
+    /* first time playing */
+
+    if(isNaN(awareness)) awareness = 0
+    if(isNaN(loyalty)) loyalty = 5
+    if(isNaN(coin)) coin = 0
+    if(isNaN(energy)) energy = 3
+    if(isNaN(day)) day = 1
+}
+
+
+/* SAVE FUNCTION */
+
+function saveGame(){
+
+    localStorage.setItem("awareness", awareness)
+    localStorage.setItem("loyalty", loyalty)
+    localStorage.setItem("coin", coin)
+    localStorage.setItem("energy", energy)
+    localStorage.setItem("day", day)
+
+}
+
+
+
+/* UPDATE UI */
+
+function updateStats(){
+
+    document.getElementById("stats").innerText =
+    "Awareness: " + awareness +
+    " | Loyalty: " + loyalty +
+    " | Coins: " + coin +
+    " | Energy: " + energy
+
+}
+
+
+
+/* START GAME */
+
+function startGame(){
+
+    document.getElementById("intro").style.display = "none"
+    document.getElementById("game").style.display = "block"
+
+    document.getElementById("day").innerText = "Day " + day
+
+     ()
+
+}
+
+
+
+/* WORK */
+
+function work(){
+
+    if(energy <= 0){
+        document.getElementById("result").innerText =
+        "You are too exhausted to work."
+        return
+    }
+
+    energy--
+    coin += 10
+    loyalty++
+
+    document.getElementById("result").innerText =
+    "You worked all day and earned 10 coins."
+
+    saveGame()
+    updateStats()
+
+}
+
+
+
+/* QUESTION SYSTEM */
+
+function question(){
+
+    awareness++
+    loyalty--
+    energy--
+
+    document.getElementById("result").innerText =
+    "You quietly question the system. Cameras may be watching."
+
+    if(awareness > 3 && loyalty < 3){
+
+        document.getElementById("result").innerText +=
+        " Guards begin monitoring you closely."
+
+    }
+
+    saveGame()
+    updateStats()
+
+}
+
+
+
+/* SLEEP */
+
+function sleep(){
+    if(energy >= 5){
+        document.getElementById("result").innerText =
+        "You are already well rested."
+        return
+    }
+    energy += 3
+    day++
+    coin -= 5
+
+    document.getElementById("day").innerText = "Day " + day
+
+    document.getElementById("result").innerText =
+    "You slept at a housing unit, the government demanded a charge. Another day begins."
+if(awareness > 10 && loyalty < 0){
+    endone()
+}
+    saveGame()
+
+    updateStats()
+
+}
+
+
+
+/* RESET GAME */
+
+function resetGame(){
+
+    localStorage.clear()
+    location.reload()
+
+}
+
+
+
+function endone(){
+    document.getElementById("result").innerText =
+    "When you wake up, you are called to the central office. You are accused of being a traitor. You are executed on the spot. The end."
+
+    document.getElementById("day").innerText = "Game Over"
+
+    document.getElementById("stats").innerText = ""
+
+    localStorage.clear()
+    setTimeout(function(){
+        location.reload()
+    }, 5000)
+    countdown(5000)
+}
+
+/* AUTO LOAD UI */
+
+window.onload = function(){
+
+    loadGame()
+    document.getElementById("day").innerText = "Day " + day
+
+    updateStats()
+
+}
+
+</script>
+
+</body>
+
+</html>
