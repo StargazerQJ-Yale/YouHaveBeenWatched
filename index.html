@@ -259,15 +259,15 @@ function resetGame(){
 
 function endone(){
     document.getElementById("result").innerText =
-    "When you wake up, you are called to the central office. You are accused of being a traitor. You are executed on the spot. The end."
+    "When you wake up, you are called to the central office. " +
+    "You are accused of being a traitor. You are programmed to reset on the spot. The end."
 
     document.getElementById("day").innerText = "Game Over"
 
     document.getElementById("stats").innerText = ""
 
-    localStorage.clear()
     setTimeout(function(){
-        location.reload()
+        resetGame()
     }, 5000)
     countdown(5000)
 }
