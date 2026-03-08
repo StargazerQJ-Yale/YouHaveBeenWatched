@@ -66,7 +66,16 @@ button{
 
 <p>You wake in your worker unit.</p>
 <p>Ration level: minimal.</p>
+<p id="broadcast"></p>
+<div id="codeTerminal" style="display:none; margin-top:20px;">
+<p>> Encrypted channel detected</p>
+<input id="codeInput" placeholder="enter code..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
+<button onclick="submitCode()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Submit Code</button>
+<p id="codeResult"></p>
 
+
+
+</div>
 <button onclick="work()">Go to Work</button>
 <button onclick="question()">Question the System</button>
 <button onclick="sleep()">Sleep</button>
@@ -92,6 +101,40 @@ let loyalty
 let coin
 let energy
 let day
+let suspicion
+let broadcasts = [
+{
+text: "> DAILY BROADCAST\nProductivity is patriotism.\nThe Nilfgaardian Empire threatens our borders.\nReport suspicious coworkers.",
+type: "nilfgaard"
+},
+{
+text: "> DAILY BROADCAST\nFood rations remain stable.\nStability is freedom.\nFreedom is stability.",
+type: "normal"
+},
+{
+text: "> DAILY BROADCAST\nCitizen loyalty index has increased.\nContinue working for the collective future.",
+type: "normal"
+}
+]
+
+let currentBroadcast = null
+
+function broadcastMessage(){
+
+    let randomIndex = Math.floor(Math.random() * broadcasts.length)
+
+    currentBroadcast = broadcasts[randomIndex]
+
+    document.getElementById("broadcast").innerText =
+    currentBroadcast.text
+
+    if(currentBroadcast.type === "nilfgaard"){
+        document.getElementById("codeTerminal").style.display = "block"
+    }else{
+        document.getElementById("codeTerminal").style.display = "none"
+    }
+
+}
 
 function countdown(ms){
     let seconds = ms / 1000
@@ -109,6 +152,17 @@ function countdown(ms){
     }, 1000)
 }
 
+function submitCode(){
+    let code = document.getElementById("codeInput").value
+    if(currentBroadcast && currentBroadcast.type === "nilfgaard" && code === "1234"){
+        document.getElementById("codeResult").innerText =
+        "MESSAGE DECODED\n\n A person is found guilty.\nPlease show this to the executor. \n\n> CODE ACCEPTED"
+    }else{
+        document.getElementById("codeResult").innerText =
+        "Invalid code."
+    }
+
+}
 function loadGame(){
 
     awareness = Number(localStorage.getItem("awareness"))
@@ -116,7 +170,7 @@ function loadGame(){
     coin = Number(localStorage.getItem("coin"))
     energy = Number(localStorage.getItem("energy"))
     day = Number(localStorage.getItem("day"))
-
+    suspicion = Number(localStorage.getItem("suspicion"))
     /* first time playing */
 
     if(isNaN(awareness)) awareness = 0
@@ -124,6 +178,7 @@ function loadGame(){
     if(isNaN(coin)) coin = 0
     if(isNaN(energy)) energy = 3
     if(isNaN(day)) day = 1
+    if(isNaN(suspicion)) suspicion = 0
 }
 
 
@@ -136,6 +191,7 @@ function saveGame(){
     localStorage.setItem("coin", coin)
     localStorage.setItem("energy", energy)
     localStorage.setItem("day", day)
+    localStorage.setItem("suspicion", suspicion)
 
 }
 
@@ -148,12 +204,14 @@ function updateStats(){
     document.getElementById("stats").innerText =
     "Awareness: " + awareness +
     " | Loyalty: " + loyalty +
+    " | Suspicion: " + suspicion +
     " | Coins: " + coin +
     " | Energy: " + energy
+    energy = Math.min(energy, 5)
+    coin = Math.max(coin, 0)
+    loyalty = Math.max(loyalty, -10)
 
 }
-
-
 
 /* START GAME */
 
@@ -164,7 +222,8 @@ function startGame(){
 
     document.getElementById("day").innerText = "Day " + day
 
-     ()
+    broadcastMessage()
+    updateStats()
 
 }
 
@@ -183,7 +242,9 @@ function work(){
     energy--
     coin += 10
     loyalty++
-
+    if(suspicion > 0){
+        suspicion--
+    }
     document.getElementById("result").innerText =
     "You worked all day and earned 10 coins."
 
@@ -200,6 +261,7 @@ function question(){
 
     awareness++
     loyalty--
+    suspicion += 2
     energy--
 
     document.getElementById("result").innerText =
@@ -217,8 +279,6 @@ function question(){
 
 }
 
-
-
 /* SLEEP */
 
 function sleep(){
@@ -232,14 +292,11 @@ function sleep(){
     coin -= 5
 
     document.getElementById("day").innerText = "Day " + day
-
     document.getElementById("result").innerText =
-    "You slept at a housing unit, the government demanded a charge. Another day begins."
-if(awareness > 10 && loyalty < 0){
-    endone()
-}
+    "You slept at a housing unit. The government demanded a charge. Another day begins."
+    broadcastMessage()
+    surveillanceCheck()
     saveGame()
-
     updateStats()
 
 }
@@ -255,11 +312,49 @@ function resetGame(){
 
 }
 
+function surveillanceCheck(){
 
+    let message = ""
+
+    if(suspicion >= 5){
+
+        let caughtChance = Math.random()
+
+        if(caughtChance < 0.5){
+
+            message = "During the night, security forces arrive.\nYou have been beaten for irregular behavior."
+
+            if(awareness > 5 && caughtChance < 0.75){
+
+                message += "\nYour awareness allows you to escape into the sewers, but you are severely injured."
+                energy = 0
+
+            }else{
+
+                let penalty = Math.random()
+
+                if(penalty < 0.5){
+
+                    message += "\nYou are sent to a labor camp for re-education."
+                    energy = 0
+                    day += 3
+                }else{
+                    endone()
+                    return
+                }
+            }
+        }else{
+            message = "You avoided surveillance tonight."
+        }
+    }else{
+        message = "You go about your day, trying not to draw attention."
+    }
+    document.getElementById("result").innerText = message
+}
 
 function endone(){
     document.getElementById("result").innerText =
-    "When you wake up, you are called to the central office. " +
+    "When you wake up, you are called to the central office." +
     "You are accused of being a traitor. You are programmed to reset on the spot. The end."
 
     document.getElementById("day").innerText = "Game Over"
