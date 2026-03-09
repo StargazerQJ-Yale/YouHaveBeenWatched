@@ -72,20 +72,21 @@ button{
 <input id="codeInput" placeholder="enter code..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
 <button onclick="submitCode()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Submit Code</button>
 <p id="codeResult"></p>
+</div>
 <div id="overrideTerminal" style="display:none; margin-top:20px;">
-<p>> SYSTEM ACCESS CHANNEL</p>
-<p>> Restricted command interface detected</p>
-<input id="overrideInput" placeholder="override command..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
-<button onclick="runOverride()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Execute</button>
-<p id="overrideResult"></p>
+  <p>> SYSTEM ACCESS CHANNEL</p>
+  <p>> Restricted command interface detected</p>
+  <input id="overrideInput" placeholder="override command..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
+  <button onclick="runOverride()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Execute</button>
+  <p id="overrideResult"></p>
 </div>
 
 
-</div>
 <button onclick="work()">Go to Work</button>
 <button onclick="question()">Question the System</button>
 <button onclick="sleep()">Sleep</button>
 <button onclick="trainAwareness()">Train Awareness</button>
+
 <br><br>
 
 <p id="result"></p>
@@ -144,6 +145,11 @@ function broadcastMessage(){
         document.getElementById("codeTerminal").style.display = "block"
     }else{
         document.getElementById("codeTerminal").style.display = "none"
+    }
+    if(overrideUnlocked){
+        document.getElementById("overrideTerminal").style.display = "block"
+    }else{
+        document.getElementById("overrideTerminal").style.display = "none"
     }
 
 }
@@ -402,19 +408,15 @@ if(day >= 15 && loyalty >= 15 && suspicion <= 1){
     citizenEnding()
     return
 }
-if(awareness >= 20 && overrideUnlocked === false){
+if(awareness >= 20 && !overrideUnlocked){
+        overrideUnlocked = true
+        document.getElementById("result").innerText +=
+        "\n\n> WARNING: Irregular cognitive pattern detected." +
+        "\n> Hidden system commands becoming visible." +
+        "\n\nYou feel like the system itself is breaking." +
+        "\n\n> New command channel will unlock in 1 day."
 
-overrideUnlocked = true
-
-document.getElementById("overrideTerminal").style.display = "block"
-
-document.getElementById("result").innerText +=
-"\n\n> WARNING: Irregular cognitive pattern detected." +
-"\n> Hidden system commands becoming visible." +
-"\n\nYou feel like the system itself is breaking." +
-"\n\n> New command channel unlocked." +
-"\n\nYou can now attempt to override the system with hidden commands."
-}
+    }
 
     saveGame()
     updateStats()
@@ -422,54 +424,55 @@ document.getElementById("result").innerText +=
 }
 
 
+
 function runOverride(){
+    if(!overrideUnlocked){
+        document.getElementById("overrideResult").innerText = "ACCESS DENIED"
+        return
+    }
 
-if(!overrideUnlocked){
-document.getElementById("overrideResult").innerText =
-"ACCESS DENIED"
-return
-}
-let input = document.getElementById("overrideInput").value
-let parts = input.split(" ")
-let command = parts[0]
-let target = parts[1]
-let value = parseInt(parts[2])
-if(command !== "override"){
-document.getElementById("overrideResult").innerText =
-"Unknown command."
-return
-}
-if(target === "loyalty"){
-loyalty = value
-}
-else if(target === "awareness"){
-awareness = value
-}
-else if(target === "coin"){
-coin = value
-}
-else if(target === "day"){
-day = value
-document.getElementById("day").innerText = "Day " + day
-}
-else{
-document.getElementById("overrideResult").innerText =
-"Invalid variable."
-return
-}
-overrideCount++
+    let input = document.getElementById("overrideInput").value.trim()
+    let parts = input.split(/\s+/) // split by 1+ spaces
+    let command = parts[0].toLowerCase()
+    let target = parts[1]
+    let value = parseInt(parts[2])
 
-document.getElementById("overrideResult").innerText =
-"> SYSTEM VARIABLE MODIFIED"
+    if(command !== "override"){
+        document.getElementById("overrideResult").innerText = "Unknown command."
+        return
+    }
 
-updateStats()
-saveGame()
+    if(isNaN(value)){
+        document.getElementById("overrideResult").innerText = "Invalid value."
+        return
+    }
 
-if(overrideCount >= 3){
-overrideEnding()
-return
-}
+    if(target === "loyalty"){
+        loyalty = value
+    }
+    else if(target === "awareness"){
+        awareness = value
+    }
+    else if(target === "coin"){
+        coin = value
+    }
+    else if(target === "day"){
+        day = value
+        document.getElementById("day").innerText = "Day " + day
+    }
+    else{
+        document.getElementById("overrideResult").innerText = "Invalid variable."
+        return
+    }
 
+    overrideCount++
+    document.getElementById("overrideResult").innerText = "> SYSTEM VARIABLE MODIFIED"
+    updateStats()
+    saveGame()
+
+    if(overrideCount >= 3){
+        overrideEnding()
+    }
 }
 
 /* RESET GAME */
@@ -604,6 +607,12 @@ window.onload = function(){
 
     loadGame()
     document.getElementById("day").innerText = "Day " + day
+    // restore override status
+    if(localStorage.getItem("overrideUnlocked") === "true"){
+        overrideUnlocked = true
+        document.getElementById("overrideTerminal").style.display = "block"
+    }
+
 
     updateStats()
 
