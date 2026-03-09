@@ -72,17 +72,24 @@ button{
 <input id="codeInput" placeholder="enter code..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
 <button onclick="submitCode()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Submit Code</button>
 <p id="codeResult"></p>
-
+<div id="overrideTerminal" style="display:none; margin-top:20px;">
+<p>> SYSTEM ACCESS CHANNEL</p>
+<p>> Restricted command interface detected</p>
+<input id="overrideInput" placeholder="override command..." style="background:black;color:#00ff88;border:1px solid #00ff88;">
+<button onclick="runOverride()" style="background:black;color:#00ff88;border:1px solid #00ff88;">Execute</button>
+<p id="overrideResult"></p>
+</div>
 
 
 </div>
 <button onclick="work()">Go to Work</button>
 <button onclick="question()">Question the System</button>
 <button onclick="sleep()">Sleep</button>
-
+<button onclick="trainAwareness()">Train Awareness</button>
 <br><br>
 
 <p id="result"></p>
+<p id="broadcast"></p>
 <p id="countdown"></p>
 <p id="stats"></p>
 
@@ -102,6 +109,9 @@ let coin
 let energy
 let day
 let suspicion
+let overrideUnlocked = false
+let overrideCount = 0
+let worldState = "stable"
 let broadcasts = [
 {
 text: "> DAILY BROADCAST\nProductivity is patriotism.\nThe Nilfgaardian Empire threatens our borders.\nReport suspicious coworkers.",
@@ -119,6 +129,8 @@ type: "normal"
 
 let currentBroadcast = null
 
+
+
 function broadcastMessage(){
 
     let randomIndex = Math.floor(Math.random() * broadcasts.length)
@@ -135,6 +147,7 @@ function broadcastMessage(){
     }
 
 }
+
 
 function countdown(ms){
     let seconds = ms / 1000
@@ -157,10 +170,19 @@ function submitCode(){
     if(currentBroadcast && currentBroadcast.type === "nilfgaard" && code === "1234"){
         document.getElementById("codeResult").innerText =
         "MESSAGE DECODED\n\n A person is found guilty.\nPlease show this to the executor. \n\n> CODE ACCEPTED"
-    }else{
-        document.getElementById("codeResult").innerText =
-        "Invalid code."
-    }
+    }else if(code === "RECALL"){
+
+    document.getElementById("codeResult").innerText =
+    "The word triggers something.\n\nYour vision glitches, and your memories return.\n\nYou were never a citizen.\n\nYou were sent here to infiltrate the system.\n\nMission Complete.\n\nEND: RECALL PROTOCOL"
+
+    setTimeout(function(){
+        resetGame()
+    }, 5000)
+    countdown(5000)
+}else{
+document.getElementById("codeResult").innerText =
+"Invalid code."
+}
 
 }
 function loadGame(){
@@ -181,6 +203,52 @@ function loadGame(){
     if(isNaN(suspicion)) suspicion = 0
 }
 
+function updateWorldState(){
+if(awareness < 5 && loyalty > 15){
+    worldState = "stable"
+}
+else if(awareness >= 5 && awareness < 10){
+    worldState = "tense"
+}
+else if(awareness >= 10){
+    worldState = "surveillance"
+}
+if(awareness >= 15 && loyalty <= 5){
+    worldState = "On-going rebellion"
+}
+if(day >= 45 && awareness >= 18){
+    worldState = "collapsing"
+}
+
+}
+
+function dailyReport(){
+
+if(worldState == "stable"){
+document.getElementById("broadcast").innerText ="The city is calm. Citizens follow regulations."
+}
+
+if(worldState == "tense"){
+document.getElementById("broadcast").innerText =
+"There are rumors of dissent. Authorities urge vigilance."
+}
+
+if(worldState == "surveillance"){
+document.getElementById("broadcast").innerText =
+"Security checkpoints increase. Cameras monitor every street."
+}
+
+if(worldState == "On-going rebellion"){
+document.getElementById("broadcast").innerText =
+"Explosions echo in the distance. The underground has emerged."
+}
+
+if(worldState == "collapsing"){
+document.getElementById("broadcast").innerText =
+"The system begins to fail. Broadcast signals flicker."
+}
+
+}
 
 /* SAVE FUNCTION */
 
@@ -207,7 +275,6 @@ function updateStats(){
     " | Suspicion: " + suspicion +
     " | Coins: " + coin +
     " | Energy: " + energy
-    energy = Math.min(energy, 5)
     loyalty = Math.max(loyalty, -10)
 
 }
@@ -227,8 +294,23 @@ function startGame(){
 }
 
 
+/* GAME ACTIONS */
+function trainAwareness(){
+    if(energy <= 0){
+        document.getElementById("result").innerText =
+        "You are too exhausted to work."
+        return
+    }
+awareness += 2
+loyalty -= 1
+energy --
+document.getElementById("result").innerText =
+"You study forbidden books in the abandoned library.\n\nAwareness increased."
+saveGame()
+updateStats()
 
-/* WORK */
+}
+
 
 function work(){
 
@@ -244,6 +326,10 @@ function work(){
     if(suspicion > 0){
         suspicion--
     }
+    if(awareness >= 10 && loyalty <= -5 && day >= 7){
+        rebellionCheck()
+        return
+    }
     document.getElementById("result").innerText =
     "You worked all day and earned 10 coins."
 
@@ -253,19 +339,19 @@ function work(){
 }
 
 
-
-/* QUESTION SYSTEM */
-
 function question(){
-
-    awareness++
+ if(energy <= 0){
+        document.getElementById("result").innerText =
+        "You are too exhausted to Question."
+        return
+    }
     loyalty--
     suspicion += 2
     energy--
 
     document.getElementById("result").innerText =
     "You quietly question the system. Cameras may be watching."
-
+   
     if(awareness > 3 && loyalty < 3){
 
         document.getElementById("result").innerText +=
@@ -278,29 +364,113 @@ function question(){
 
 }
 
-/* SLEEP */
-
 function sleep(){
-    if(energy >= 5){
+    if(energy >= 10){
         document.getElementById("result").innerText =
         "You are already well rested."
         return
     }
-    energy += 3
+    energy += 5
     day++
     coin -= 5
+    awareness -= 0.5
+    loyalty -= 0.5
+    if(awareness < 0){
+    awareness = 0
+}
+
+if(loyalty < 0){
+loyalty = 0
+}
+
+updateStats()
 
     document.getElementById("day").innerText = "Day " + day
     document.getElementById("result").innerText =
-    "You slept at a housing unit. The government demanded a charge. Another day begins."
+    "You slept at a housing unit. The government demanded a charge. Another day begins.\n\nPropaganda erodes awareness. Fear erodes loyalty."
     broadcastMessage()
-    surveillanceCheck()
+     updateWorldState()
+    dailyReport()
+    if (suspicion >= 5) {
+        surveillanceCheck()
+    }
+    if(day >= 50 && awareness >= 20){
+    metaEnding()
+    return
+}
+if(day >= 15 && loyalty >= 15 && suspicion <= 1){
+    citizenEnding()
+    return
+}
+if(awareness >= 20 && overrideUnlocked === false){
+
+overrideUnlocked = true
+
+document.getElementById("overrideTerminal").style.display = "block"
+
+document.getElementById("result").innerText +=
+"\n\n> WARNING: Irregular cognitive pattern detected." +
+"\n> Hidden system commands becoming visible." +
+"\n\nYou feel like the system itself is breaking." +
+"\n\n> New command channel unlocked." +
+"\n\nYou can now attempt to override the system with hidden commands."
+}
+
     saveGame()
     updateStats()
 
 }
 
 
+function runOverride(){
+
+if(!overrideUnlocked){
+document.getElementById("overrideResult").innerText =
+"ACCESS DENIED"
+return
+}
+let input = document.getElementById("overrideInput").value
+let parts = input.split(" ")
+let command = parts[0]
+let target = parts[1]
+let value = parseInt(parts[2])
+if(command !== "override"){
+document.getElementById("overrideResult").innerText =
+"Unknown command."
+return
+}
+if(target === "loyalty"){
+loyalty = value
+}
+else if(target === "awareness"){
+awareness = value
+}
+else if(target === "coin"){
+coin = value
+}
+else if(target === "day"){
+day = value
+document.getElementById("day").innerText = "Day " + day
+}
+else{
+document.getElementById("overrideResult").innerText =
+"Invalid variable."
+return
+}
+overrideCount++
+
+document.getElementById("overrideResult").innerText =
+"> SYSTEM VARIABLE MODIFIED"
+
+updateStats()
+saveGame()
+
+if(overrideCount >= 3){
+overrideEnding()
+return
+}
+
+}
 
 /* RESET GAME */
 
@@ -329,16 +499,14 @@ function surveillanceCheck(){
                 energy = 0
 
             }else{
-
                 let penalty = Math.random()
-
                 if(penalty < 0.5){
 
                     message += "\nYou are sent to a labor camp for re-education."
                     energy = 0
                     day += 3
                 }else{
-                    endone()
+                    Beingcaught()
                     return
                 }
             }
@@ -350,8 +518,20 @@ function surveillanceCheck(){
     }
     document.getElementById("result").innerText = message
 }
+/* ENDINGS */
+function citizenEnding(){
+        document.getElementById("result").innerText =
+        "Your loyalty has not gone unnoticed.\n\nYou are promoted to a supervisory role.\nYou now help maintain the stability of society.\n\nENDING: MODEL CITIZEN"
 
-function endone(){
+    setTimeout(function(){
+        resetGame()
+    }, 5000)
+    countdown(5000)
+
+    
+
+}
+function Beingcaught(){
     document.getElementById("result").innerText =
     "When you wake up, you are called to the central office." +
     "You are accused of being a traitor. You are programmed to reset on the spot. The end."
@@ -365,7 +545,59 @@ function endone(){
     }, 5000)
     countdown(5000)
 }
+function rebellionCheck(){
 
+   
+
+        document.getElementById("result").innerText =
+        "You discover a hidden passage beneath the factory.\nThe underground resistance has been watching you.\n\nYou join the rebellion.\n\nENDING: THE UNDERGROUND"
+
+    setTimeout(function(){
+        resetGame()
+    }, 5000)
+    countdown(5000)
+
+
+}
+function metaEnding(){
+
+document.getElementById("result").innerText =
+"Day 50.\n\nYou finally understand.\n\nThis world is not real.\nThe rebellion, the government, even your choices.\n\nThey were all part of a system.\n\nA message appears:\n\n'USER AWARENESS EXCEEDED THRESHOLD.'\n\nThe simulation shuts down.\n\nEND: META AWAKENING"
+
+document.getElementById("day").innerText = "Ending Reached"
+document.getElementById("stats").innerText = ""
+
+localStorage.clear()
+
+setTimeout(function(){
+location.reload()
+},8000)
+
+}
+function overrideEnding(){
+
+document.getElementById("result").innerText =
+"You type commands into the system.\n\n" +
+"The world begins to respond.\n\n" +
+"Loyalty. Awareness. Time itself.\n\n" +
+"They were never real.\n\n" +
+"You were editing the simulation.\n\n" +
+"A final message appears:\n\n" +
+"> ADMIN PRIVILEGES DETECTED\n" +
+"> USER STATUS: UNDEFINED\n\n" +
+"The system can no longer contain you.\n\n" +
+"END: SYSTEM OVERRIDE"
+
+document.getElementById("day").innerText = "SYSTEM FAILURE"
+document.getElementById("stats").innerText = ""
+
+setTimeout(function(){
+resetGame()
+},7000)
+
+countdown(7000)
+
+}
 /* AUTO LOAD UI */
 
 window.onload = function(){
