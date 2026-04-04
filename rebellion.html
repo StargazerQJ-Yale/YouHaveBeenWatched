@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ending: Underground</title>
+<style>
+body {
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding-top:100px;
+}
+
+h1 {
+    text-shadow: 0 0 8px #00ff88;
+    letter-spacing: 3px;
+}
+
+.footer { margin-top: 60px; opacity: 0.8; }
+
+button {
+    background: black;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    padding: 10px 20px;
+    font-family: monospace;
+    cursor: pointer;
+}
+button:hover { background:#00ff88; color:black; }
+</style>
+</head>
+
+<body>
+
+<h1>THE UNDERGROUND</h1>
+
+<p>You discover a hidden passage beneath the factory.</p>
+<p>The underground resistance has been watching you.</p>
+<p>You join the rebellion.</p>
+<p>override ___ ___</p>
+<p><b>ENDING: THE UNDERGROUND</b></p>
+
+<div class="footer">
+    <button onclick="restart()">REINITIALIZE</button>
+</div>
+
+<script>
+function restart() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

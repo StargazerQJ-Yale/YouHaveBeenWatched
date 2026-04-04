@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ending: Being Caught</title>
+<style>
+body {
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding-top:100px;
+}
+
+h1 {
+    letter-spacing: 3px;
+    text-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88;
+    position: relative;
+    display:inline-block;
+}
+
+.footer { margin-top: 60px; opacity: 0.8; }
+
+button {
+    background: black;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    padding: 10px 20px;
+    font-family: monospace;
+    cursor: pointer;
+}
+button:hover { background:#00ff88; color:black; }
+
+.systemTag { margin-top:15px; font-size:12px; opacity:0.5; }
+</style>
+</head>
+
+<body>
+
+<h1>TRAITOR DETECTED</h1>
+
+<p>When you wake up, you are called to the central office.</p>
+<p>You are accused of being a traitor.</p>
+<p>You are programmed to reset on the spot.</p>
+<p> ____ traits ____</p>
+<p><b>THE END.</b></p>
+
+<div class="footer">
+    <button onclick="restart()">REINITIALIZE</button>
+    <div class="systemTag">SYSTEM MESSAGE: TERMINATION COMPLETE</div>
+</div>
+
+<script>
+function restart() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

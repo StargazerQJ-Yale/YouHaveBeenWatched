@@ -90,7 +90,6 @@ button{
 <br><br>
 
 <p id="result"></p>
-<p id="broadcast"></p>
 <p id="countdown"></p>
 <p id="stats"></p>
 
@@ -111,11 +110,17 @@ let energy
 let day
 let suspicion
 let overrideUnlocked = false
+let overridePending = false
+
+// FIX 1: overrideCount was used in runOverride() but never declared
 let overrideCount = 0
-let worldState = "stable"
+
+// FIX 2: worldState was referenced in broadcastMessage() but never declared
+let worldState = "normal"
+
 let broadcasts = [
 {
-text: "> DAILY BROADCAST\nProductivity is patriotism.\nThe Nilfgaardian Empire threatens our borders.\nReport suspicious coworkers.",
+text: "> DAILY BROADCAST\nProductivity is patriotism.\nThe Nilfgaardian Empire threatens our borders.\nsystem co..collapsing...error...error\n retraction system active, please enter code to confirm identity.",
 type: "nilfgaard"
 },
 {
@@ -128,32 +133,68 @@ type: "normal"
 }
 ]
 
+let secretCode = ""
 let currentBroadcast = null
-
 
 
 function broadcastMessage(){
 
-    let randomIndex = Math.floor(Math.random() * broadcasts.length)
+    // Awareness-based Nilfgaard chance
+    let chance = 0.2 + (awareness * 0.03)
 
-    currentBroadcast = broadcasts[randomIndex]
+    if(Math.random() < chance){
+        currentBroadcast = broadcasts.find(b => b.type === "nilfgaard")
+    } else {
+        let normal = broadcasts.filter(b => b.type === "normal")
+        currentBroadcast = normal[Math.floor(Math.random() * normal.length)]
+    }
 
-    document.getElementById("broadcast").innerText =
-    currentBroadcast.text
+    let messageText = broadcasts.find(b => b.type === currentBroadcast.type).text
 
+    // Secret code hint system
+    if(currentBroadcast.type === "nilfgaard"){
+
+        let revealLevel = Math.max(1, Math.min(Math.floor(day / 8), 4))
+
+        let hint =
+            secretCode.slice(0, revealLevel) +
+            "*".repeat(4 - revealLevel)
+
+        messageText += "\n\n> Code Fragment: " + hint
+    }
+
+    // Merge world state into broadcast
+    if(worldState === "tense"){
+        messageText += "\n\n> There are rumors of dissent."
+    }
+
+    if(worldState === "surveillance"){
+        messageText += "\n\n> Cameras monitor every street."
+    }
+
+    if(worldState === "rebellion"){
+        messageText += "\n\n> Explosions echo in the distance."
+    }
+
+    if(worldState === "collapsing"){
+        messageText += "\n\n> Broadcast signal unstable."
+    }
+
+    document.getElementById("broadcast").innerText = messageText
+
+    // UI toggles
     if(currentBroadcast.type === "nilfgaard"){
         document.getElementById("codeTerminal").style.display = "block"
     }else{
         document.getElementById("codeTerminal").style.display = "none"
     }
+
     if(overrideUnlocked){
         document.getElementById("overrideTerminal").style.display = "block"
     }else{
         document.getElementById("overrideTerminal").style.display = "none"
     }
-
 }
-
 
 function countdown(ms){
     let seconds = ms / 1000
@@ -173,24 +214,33 @@ function countdown(ms){
 
 function submitCode(){
     let code = document.getElementById("codeInput").value
-    if(currentBroadcast && currentBroadcast.type === "nilfgaard" && code === "1234"){
+
+    if(currentBroadcast?.type === "nilfgaard" && code === secretCode){
+        if(!overrideUnlocked){
+            overrideUnlocked = true
+            overridePending = false
+
+            document.getElementById("codeResult").innerText =
+"> WARNING: Irregular cognitive pattern detected.\n\n" +
+"> Signal origin: UNKNOWN\n" +
+"> Authority: NOT RECOGNIZED\n\n" +
+"…\n\n" +
+"> Injecting hidden interface...\n\n" +
+"> Override terminal unlocked."
+            document.getElementById("overrideTerminal").style.display = "block"
+        } else {
+            document.getElementById("codeResult").innerText =
+            "> Override terminal already unlocked."
+        }
+
+    } else {
         document.getElementById("codeResult").innerText =
-        "MESSAGE DECODED\n\n A person is found guilty.\nPlease show this to the executor. \n\n> CODE ACCEPTED"
-    }else if(code === "RECALL"){
-
-    document.getElementById("codeResult").innerText =
-    "The word triggers something.\n\nYour vision glitches, and your memories return.\n\nYou were never a citizen.\n\nYou were sent here to infiltrate the system.\n\nMission Complete.\n\nEND: RECALL PROTOCOL"
-
-    setTimeout(function(){
-        resetGame()
-    }, 5000)
-    countdown(5000)
-}else{
-document.getElementById("codeResult").innerText =
-"Invalid code."
+        "Invalid code."
+            suspicion += 1
+            updateStats()
+    }
 }
 
-}
 function loadGame(){
 
     awareness = Number(localStorage.getItem("awareness"))
@@ -199,7 +249,9 @@ function loadGame(){
     energy = Number(localStorage.getItem("energy"))
     day = Number(localStorage.getItem("day"))
     suspicion = Number(localStorage.getItem("suspicion"))
-    /* first time playing */
+    overridePending = localStorage.getItem("overridePending") === "true"
+    overrideCount = Number(localStorage.getItem("overrideCount")) || 0
+    worldState = localStorage.getItem("worldState") || "normal"
 
     if(isNaN(awareness)) awareness = 0
     if(isNaN(loyalty)) loyalty = 5
@@ -207,54 +259,14 @@ function loadGame(){
     if(isNaN(energy)) energy = 3
     if(isNaN(day)) day = 1
     if(isNaN(suspicion)) suspicion = 0
+    if(localStorage.getItem("secretCode")){
+        secretCode = localStorage.getItem("secretCode")
+    } else {
+        secretCode = Math.floor(1000 + Math.random() * 9000).toString()
+        localStorage.setItem("secretCode", secretCode)
+    }
 }
 
-function updateWorldState(){
-if(awareness < 5 && loyalty > 15){
-    worldState = "stable"
-}
-else if(awareness >= 5 && awareness < 10){
-    worldState = "tense"
-}
-else if(awareness >= 10){
-    worldState = "surveillance"
-}
-if(awareness >= 15 && loyalty <= 5){
-    worldState = "On-going rebellion"
-}
-if(day >= 45 && awareness >= 18){
-    worldState = "collapsing"
-}
-
-}
-
-function dailyReport(){
-
-if(worldState == "stable"){
-document.getElementById("broadcast").innerText ="The city is calm. Citizens follow regulations."
-}
-
-if(worldState == "tense"){
-document.getElementById("broadcast").innerText =
-"There are rumors of dissent. Authorities urge vigilance."
-}
-
-if(worldState == "surveillance"){
-document.getElementById("broadcast").innerText =
-"Security checkpoints increase. Cameras monitor every street."
-}
-
-if(worldState == "On-going rebellion"){
-document.getElementById("broadcast").innerText =
-"Explosions echo in the distance. The underground has emerged."
-}
-
-if(worldState == "collapsing"){
-document.getElementById("broadcast").innerText =
-"The system begins to fail. Broadcast signals flicker."
-}
-
-}
 
 /* SAVE FUNCTION */
 
@@ -266,7 +278,10 @@ function saveGame(){
     localStorage.setItem("energy", energy)
     localStorage.setItem("day", day)
     localStorage.setItem("suspicion", suspicion)
-
+    localStorage.setItem("overrideUnlocked", overrideUnlocked)
+    localStorage.setItem("overridePending", overridePending)
+    localStorage.setItem("overrideCount", overrideCount)
+    localStorage.setItem("worldState", worldState)
 }
 
 
@@ -317,9 +332,7 @@ updateStats()
 
 }
 
-
 function work(){
-
     if(energy <= 0){
         document.getElementById("result").innerText =
         "You are too exhausted to work."
@@ -329,20 +342,27 @@ function work(){
     energy--
     coin += 10
     loyalty++
-    if(suspicion > 0){
-        suspicion--
+    suspicion -= 0.5
+    if(suspicion < 0){
+        suspicion = 0
     }
     if(awareness >= 10 && loyalty <= -5 && day >= 7){
-        rebellionCheck()
+        window.location.href = "rebellion.html"
         return
     }
-    document.getElementById("result").innerText =
-    "You worked all day and earned 10 coins."
+    if(Math.random() < 0.1){
+        suspicion++
+        coin -= 5
+        document.getElementById("result").innerText = "You made a mistake at work and drew attention. You were reprimanded and lost some coins."
+    } else {
+        document.getElementById("result").innerText = "You worked all day and earned 10 coins."
+    }
 
     saveGame()
     updateStats()
-
 }
+
+
 
 
 function question(){
@@ -380,42 +400,33 @@ function sleep(){
     day++
     coin -= 5
     awareness -= 0.5
-    loyalty -= 0.5
+    loyalty += 0.5
     if(awareness < 0){
-    awareness = 0
-}
+        awareness = 0
+    }
 
-if(loyalty < 0){
-loyalty = 0
-}
+    if(loyalty < 0){
+        loyalty = 0
+    }
 
-updateStats()
+    updateStats()
 
     document.getElementById("day").innerText = "Day " + day
     document.getElementById("result").innerText =
-    "You slept at a housing unit. The government demanded a charge. Another day begins.\n\nPropaganda erodes awareness. Fear erodes loyalty."
+    "You slept at a housing unit. The government demanded a charge. Another day begins.\n\nPropaganda erodes awareness. Fear enforces loyalty."
     broadcastMessage()
-     updateWorldState()
-    dailyReport()
+    updateWorldState()  // FIX 3: now defined below
+    dailyReport()       // FIX 4: now defined below
     if (suspicion >= 5) {
         surveillanceCheck()
     }
     if(day >= 50 && awareness >= 20){
-    metaEnding()
-    return
-}
-if(day >= 15 && loyalty >= 15 && suspicion <= 1){
-    citizenEnding()
-    return
-}
-if(awareness >= 20 && !overrideUnlocked){
-        overrideUnlocked = true
-        document.getElementById("result").innerText +=
-        "\n\n> WARNING: Irregular cognitive pattern detected." +
-        "\n> Hidden system commands becoming visible." +
-        "\n\nYou feel like the system itself is breaking." +
-        "\n\n> New command channel will unlock in 1 day."
-
+        window.location.href = "meta.html"
+        return
+    }
+    if(day >= 15 && loyalty >= 15 && suspicion <= 1){
+        window.location.href = "citizen.html"
+        return
     }
 
     saveGame()
@@ -423,6 +434,36 @@ if(awareness >= 20 && !overrideUnlocked){
 
 }
 
+
+// FIX 3: updateWorldState() was called but never defined
+function updateWorldState(){
+    if(day >= 30 || (suspicion >= 8 && awareness >= 15)){
+        worldState = "collapsing"
+    } else if(awareness >= 15 && loyalty <= 2){
+        worldState = "rebellion"
+    } else if(suspicion >= 5 || day >= 15){
+        worldState = "surveillance"
+    } else if(suspicion >= 3 || day >= 7){
+        worldState = "tense"
+    } else {
+        worldState = "normal"
+    }
+}
+
+
+// FIX 4: dailyReport() was called but never defined
+function dailyReport(){
+    let report = "\n\n> DAILY REPORT — Day " + day
+    if(suspicion >= 5){
+        report += "\n> Threat level: HIGH"
+    } else if(suspicion >= 3){
+        report += "\n> Threat level: ELEVATED"
+    } else {
+        report += "\n> Threat level: LOW"
+    }
+    report += "\n> World status: " + worldState.toUpperCase()
+    document.getElementById("result").innerText += report
+}
 
 
 function runOverride(){
@@ -432,7 +473,7 @@ function runOverride(){
     }
 
     let input = document.getElementById("overrideInput").value.trim()
-    let parts = input.split(/\s+/) // split by 1+ spaces
+    let parts = input.split(/\s+/)
     let command = parts[0].toLowerCase()
     let target = parts[1]
     let value = parseInt(parts[2])
@@ -471,7 +512,7 @@ function runOverride(){
     saveGame()
 
     if(overrideCount >= 3){
-        overrideEnding()
+        window.location.href = "override.html"
     }
 }
 
@@ -509,7 +550,7 @@ function surveillanceCheck(){
                     energy = 0
                     day += 3
                 }else{
-                    Beingcaught()
+                    window.location.href = "beingcaught.html"
                     return
                 }
             }
@@ -521,98 +562,20 @@ function surveillanceCheck(){
     }
     document.getElementById("result").innerText = message
 }
-/* ENDINGS */
-function citizenEnding(){
-        document.getElementById("result").innerText =
-        "Your loyalty has not gone unnoticed.\n\nYou are promoted to a supervisory role.\nYou now help maintain the stability of society.\n\nENDING: MODEL CITIZEN"
 
-    setTimeout(function(){
-        resetGame()
-    }, 5000)
-    countdown(5000)
-
-    
-
-}
-function Beingcaught(){
-    document.getElementById("result").innerText =
-    "When you wake up, you are called to the central office." +
-    "You are accused of being a traitor. You are programmed to reset on the spot. The end."
-
-    document.getElementById("day").innerText = "Game Over"
-
-    document.getElementById("stats").innerText = ""
-
-    setTimeout(function(){
-        resetGame()
-    }, 5000)
-    countdown(5000)
-}
-function rebellionCheck(){
-
-   
-
-        document.getElementById("result").innerText =
-        "You discover a hidden passage beneath the factory.\nThe underground resistance has been watching you.\n\nYou join the rebellion.\n\nENDING: THE UNDERGROUND"
-
-    setTimeout(function(){
-        resetGame()
-    }, 5000)
-    countdown(5000)
-
-
-}
-function metaEnding(){
-
-document.getElementById("result").innerText =
-"Day 50.\n\nYou finally understand.\n\nThis world is not real.\nThe rebellion, the government, even your choices.\n\nThey were all part of a system.\n\nA message appears:\n\n'USER AWARENESS EXCEEDED THRESHOLD.'\n\nThe simulation shuts down.\n\nEND: META AWAKENING"
-
-document.getElementById("day").innerText = "Ending Reached"
-document.getElementById("stats").innerText = ""
-
-localStorage.clear()
-
-setTimeout(function(){
-location.reload()
-},8000)
-
-}
-function overrideEnding(){
-
-document.getElementById("result").innerText =
-"You type commands into the system.\n\n" +
-"The world begins to respond.\n\n" +
-"Loyalty. Awareness. Time itself.\n\n" +
-"They were never real.\n\n" +
-"You were editing the simulation.\n\n" +
-"A final message appears:\n\n" +
-"> ADMIN PRIVILEGES DETECTED\n" +
-"> USER STATUS: UNDEFINED\n\n" +
-"The system can no longer contain you.\n\n" +
-"END: SYSTEM OVERRIDE"
-
-document.getElementById("day").innerText = "SYSTEM FAILURE"
-document.getElementById("stats").innerText = ""
-
-setTimeout(function(){
-resetGame()
-},7000)
-
-countdown(7000)
-
-}
 /* AUTO LOAD UI */
 
 window.onload = function(){
 
     loadGame()
     document.getElementById("day").innerText = "Day " + day
-    // restore override status
     if(localStorage.getItem("overrideUnlocked") === "true"){
         overrideUnlocked = true
         document.getElementById("overrideTerminal").style.display = "block"
     }
-
+    if(localStorage.getItem("overridePending") === "true"){
+        overridePending = true
+    }
 
     updateStats()
 

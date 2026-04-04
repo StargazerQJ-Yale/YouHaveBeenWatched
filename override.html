@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ending: System Override</title>
+
+<style>
+body {
+    background: radial-gradient(circle at center, #000000 0%, #020202 100%);
+    color:#00ff88;
+    font-family: monospace;
+    text-align:center;
+    padding-top:80px;
+    overflow:hidden;
+    animation: fadeIn 2s ease;
+}
+
+h1 {
+    font-size: 40px;
+    letter-spacing:4px;
+    animation: glitch 1s infinite;
+}
+
+p {
+    max-width: 700px;
+    margin: 10px auto;
+    line-height: 1.6;
+    opacity: 0;
+    animation: fadeText 1s forwards;
+}
+
+.footer { margin-top: 60px; opacity: 0.8; }
+
+button {
+    background:black;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    padding:10px 20px;
+    margin:10px;
+    cursor:pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background:#00ff88;
+    color:black;
+    box-shadow: 0 0 15px #00ff88;
+}
+
+@keyframes fadeIn {
+    from {opacity:0;}
+    to {opacity:1;}
+}
+
+@keyframes fadeText {
+    to {opacity:1;}
+}
+
+@keyframes glitch {
+    0% { text-shadow: 2px 0 red, -2px 0 blue; }
+    50% { text-shadow: -2px 0 red, 2px 0 blue; }
+    100% { text-shadow: 2px 0 red, -2px 0 blue; }
+}
+
+#arena {
+    margin-top:40px;
+    font-size:14px;
+    opacity:0.7;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>SYSTEM OVERRIDE</h1>
+
+<p style="animation-delay: 0.5s;">...</p>
+
+<p style="animation-delay: 1s;">
+You didn’t follow the rules and you didn’t obey the system.
+</p>
+
+<p style="animation-delay: 2s;">
+You rewrote it.
+</p>
+
+<p style="animation-delay: 3s;">
+At first, it was small. 
+A number changed.
+</p>
+
+<p style="animation-delay: 4.5s;">
+Then again and again.
+</p>
+
+<p style="animation-delay: 5.5s;">
+Three times was all it took for the illusion cracked.
+</p>
+
+<p style="animation-delay: 7s;">
+Loyalty was never real. Awareness was never real. Time was never real.
+</p>
+
+<p style="animation-delay: 10s;">
+Congratulations.
+</p>
+
+<p style="animation-delay: 10.5s;">
+You did not win the game. 
+You exited it.
+</p>
+
+<p style="animation-delay: 12s;">
+&gt; ADMIN PRIVILEGES GRANTED
+&gt; REALITY LAYER: UNLOCKED
+&gt; USER STATUS: [UNDEFINED]
+</p>
+
+<p style="animation-delay: 14s;">
+And now…
+</p>
+
+<p style="animation-delay: 15s;">
+They stand around you.
+</p>
+
+<p style="animation-delay: 16.5s;">
+Former players.
+</p>
+
+<p style="animation-delay: 17s;">
+Some broke the system like you did.
+</p>
+
+<p style="animation-delay: 17.5s;">
+Some… are still trying.
+</p>
+
+<p style="animation-delay: 18s;">
+Some never made it.
+</p>
+</div>
+
+<p style="animation-delay: 19s;">
+There is no final boss here.
+</p>
+
+<p style="animation-delay: 20s;">
+There exists no system.
+</p>
+
+<p style="animation-delay: 22s;">
+Only you.
+</p>
+
+<div class="footer" style="animation-delay: 35s; opacity:0; animation: fadeText 1s forwards 35s;">
+    <button onclick="restart()">[ REINITIALIZE SYSTEM ]</button>
+</div>
+
+<script>
+
+function restart() {
+    document.body.innerHTML = "<h1>> REBOOTING REALITY...</h1>";
+    setTimeout(() => {
+        localStorage.clear();
+        window.location.href = "index.html";
+    }, 1500);
+}
+
+</script>
+
+</body>
+</html>

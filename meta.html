@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ending: Meta Awakening</title>
+<style>
+body {
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding-top:90px;
+}
+
+h1 {
+    text-shadow: 0 0 10px #00ff88;
+}
+
+.glitch {
+    position: relative;
+}
+.glitch::before,
+.glitch::after {
+    content: "META AWAKENING";
+    position:absolute;
+    left:0;
+    width:100%;
+}
+.glitch::before { left:2px; color:red; }
+.glitch::after { left:-2px; color:blue; }
+
+.footer { margin-top: 60px; opacity: 0.8; }
+</style>
+</head>
+
+<body>
+
+<h1 class="glitch">META AWAKENING</h1>
+
+<p>Day 50.</p>
+<p>You finally understand.</p>
+<p>This world is not real.</p>
+<p>The rebellion, the government, even your choices.</p>
+<p>They were all part of a system.</p>
+<br>
+<p><b>"USER AWARENESS EXCEEDED THRESHOLD."</b></p>
+<p>The simulation shuts down.</p>
+<p>Override code format: String String Number</p>
+<p><b>END: META AWAKENING</b></p>
+
+<div class="footer">
+    <button onclick="restart()">REINITIALIZE</button>
+</div>
+
+<script>
+function restart() {
+    localStorage.clear();
+    location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

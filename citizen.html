@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ending: Model Citizen</title>
+<style>
+h1 {
+    letter-spacing: 3px;
+    text-shadow: 0 0 5px #00ff88, 0 0 10px #00ff88;
+}
+body {
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding-top:100px;
+}
+
+.glitch::before,
+.glitch::after {
+    content: "MODEL CITIZEN";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 red;
+    animation: glitch 1.5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 blue;
+    animation: glitch 1.2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch {
+    0% { clip-path: inset(0 0 90% 0); }
+    20% { clip-path: inset(10% 0 60% 0); }
+    40% { clip-path: inset(40% 0 20% 0); }
+    60% { clip-path: inset(20% 0 40% 0); }
+    80% { clip-path: inset(60% 0 10% 0); }
+    100% { clip-path: inset(0 0 90% 0); }
+}
+.footer {
+    margin-top: 60px;
+    opacity: 0.8;
+}
+
+button {
+    background: black;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    padding: 10px 20px;
+    font-family: monospace;
+    cursor: pointer;
+    letter-spacing: 2px;
+}
+
+button:hover {
+    background: #00ff88;
+    color: black;
+}
+
+.systemTag {
+    margin-top: 15px;
+    font-size: 12px;
+    opacity: 0.5;
+    letter-spacing: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<h1 class="glitch">MODEL CITIZEN</h1>
+
+<p>Your loyalty has not gone unnoticed.</p>
+<p>You are promoted.</p>
+<p>You now help maintain the system.</p>
+<p>Your Drink is: Milk</p>
+<p>This beverage has been verified by the Ministry of Health.</p>
+<p>..zzz.zzz...to use the terminal, you must follow the rules, there are three part of the code you have to write...</p>
+<p>To leave the... system completely, remember, Third time's the charm.</p>
+<p id="dynamicLine"></p>
+
+<div class="footer">
+    <button onclick="restart()">REINITIALIZE SIMULATION</button>
+
+<script>
+function restart() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+</script>
+
+    <div class="systemTag">SYSTEM MESSAGE: ENDING UNLOCKED</div>
+</div>
+
+</body>
+<script>
+const lines = [
+    "SYSTEM STABILITY: 52.1%",
+    "OBSERVATION: ACTIVE",
+    "BEHAVIOR CLASS: ACCEPTED",
+    "MONITORING: CONTINUOUS"
+];
+
+document.getElementById("dynamicLine").textContent =
+    lines[Math.floor(Math.random() * lines.length)];
+</script>
+</html>
